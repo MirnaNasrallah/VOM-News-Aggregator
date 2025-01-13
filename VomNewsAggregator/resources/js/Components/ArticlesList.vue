@@ -32,6 +32,13 @@
                 </div>
             </div>
         </div>
+        <div class="pagination-controls">
+            <button @click="changePage(pagination.current_page - 1)"
+                :disabled="pagination.current_page === 1">Previous</button>
+            <span>Page {{ pagination.current_page }} of {{ pagination.last_page }}</span>
+            <button @click="changePage(pagination.current_page + 1)"
+                :disabled="pagination.current_page === pagination.last_page">Next</button>
+        </div>
     </div>
 </template>
 
@@ -47,28 +54,42 @@ export default {
                 date: '',
                 category: '',
             },
+            pagination: {
+                current_page: 1,
+                last_page: 1,
+                next_page_url: null,
+                prev_page_url: null,
+            },
         };
     },
     methods: {
-        fetchArticles() {
+        fetchArticles(page = 1) {
             const params = new URLSearchParams();
             if (this.filters.source) params.append('source', this.filters.source);
             if (this.filters.date) params.append('date', this.filters.date);
             if (this.filters.category) params.append('category', this.filters.category);
 
-            const queryString = params.toString();
-            const url = queryString
-                ? `http://127.0.0.1:8000/api/articles?${queryString}`
-                : `http://127.0.0.1:8000/api/articles`;
+            params.append('page', page);
 
             axios
-                .get(url)
+                .get(`http://127.0.0.1:8000/api/articles`, { params })
                 .then(response => {
-                    this.articles = response.data;
+                    this.articles = response.data.data; // Articles data
+                    this.pagination = {
+                        current_page: response.data.current_page,
+                        last_page: response.data.last_page,
+                        next_page_url: response.data.next_page_url,
+                        prev_page_url: response.data.prev_page_url,
+                    };
                 })
                 .catch(error => {
                     console.error('Error fetching articles:', error);
                 });
+        },
+
+        changePage(page) {
+            this.fetchArticles(page);
+            window.scrollTo({ top: 700, behavior: 'smooth' });
         },
         resetFilters() {
             this.filters.source = '';
@@ -193,8 +214,12 @@ p {
 .router-link:hover {
     text-decoration: underline;
 }
-.read-more{
-    position: absolute; left: 0; width: 100%; bottom: 0;
+
+.read-more {
+    position: absolute;
+    left: 0;
+    width: 100%;
+    bottom: 0;
     margin-bottom: 15px;
 
 }
@@ -205,7 +230,48 @@ p {
     color: white;
     font-weight: 200;
     border-radius: 5px;
-   margin: 0 auto; text-align: 'center';
+    margin: 0 auto;
+    text-align: 'center';
 
+}
+.pagination-controls {
+    position: relative;
+    margin-top: 25px;
+    display: flex;
+    justify-content: center;
+    gap: 20px; 
+    background-color: rgba(255, 255, 255, 0.9);
+    padding: 10px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.pagination-controls button {
+    position: static;
+    background-image: linear-gradient(to bottom right, #07294d, #6491c2);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.pagination-controls button:hover {
+    background-image: linear-gradient(to bottom right, #6491c2, #07294d);
+}
+
+.pagination-controls button:disabled {
+    background-image: linear-gradient(to bottom right, #6491c2, #707070);
+    cursor: not-allowed;
+}
+
+.pagination-controls span {
+
+    align-self: center;
+    font-family: 'Roboto', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    color: #666666;
 }
 </style>

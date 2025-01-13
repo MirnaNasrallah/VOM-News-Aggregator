@@ -54,7 +54,7 @@ class FetchArticles extends Command
                 continue;
             }
 
-            // Prepare the article array for insertion
+            //article array for insertion
             $newArticles[] = [
                 'article_id' => $guid,
                 'title' => $title,

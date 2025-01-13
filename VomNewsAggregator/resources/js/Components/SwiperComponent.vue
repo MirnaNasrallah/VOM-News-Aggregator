@@ -35,7 +35,7 @@ export default {
         };
     },
     mounted() {
-        axios.get('http://127.0.0.1:8000/api/feautered')
+        axios.get('http://127.0.0.1:8000/api/featured')
             .then(response => {
                 this.articles = response.data;
             })

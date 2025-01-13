@@ -12,18 +12,29 @@ class ArticleControllerTest extends TestCase
     use RefreshDatabase;
 
     /** @test */
-    public function it_returns_all_articles()
+    public function it_returns_paginated_articles()
     {
         // Arrange: create some articles
-        Article::factory()->count(3)->create();
+        Article::factory()->count(15)->create();
 
-        // Act: make a GET request to fetch all articles
+        // Act: make a GET request to fetch paginated articles
         $response = $this->getJson(route('articles.index'));
 
-        // Assert: the response contains the correct number of articles
+        // Assert: the response contains the correct structure for pagination
         $response->assertStatus(200);
-        $response->assertJsonCount(3);
+        $response->assertJsonStructure([
+            'data',  // the actual articles
+            'current_page',
+            'last_page',
+            'per_page',
+            'total',
+            // other pagination keys as needed
+        ]);
+
+        // Assert: the 'data' contains the expected number of articles per page
+        $response->assertJsonCount(10, 'data');  // Assuming 10 articles per page
     }
+
 
     /** @test */
     public function it_filters_articles_by_source()

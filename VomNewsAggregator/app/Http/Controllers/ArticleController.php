@@ -20,7 +20,7 @@ class ArticleController extends Controller
             $query->where('category', $request->input('category'));
         }
 
-        $articles = $query->get();
+        $articles = $query->paginate(10);
         return response()->json($articles);
 
     }
